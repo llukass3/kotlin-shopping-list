@@ -6,33 +6,22 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.res.painterResource
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.sharp.ArrowBackIos
 import androidx.compose.material.icons.automirrored.sharp.ArrowForwardIos
-import androidx.compose.material.icons.sharp.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.sharp.DeleteOutline
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-var shoppingItems = ArrayList<ShoppingItem>()
 
 class ShoppingList : ComponentActivity() {
 
@@ -40,12 +29,18 @@ class ShoppingList : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            shoppingItems.add(ShoppingItem("Apfel"))
-            shoppingItems.add(ShoppingItem("Kartoffeln"))
+            val shoppingListItems = remember {
+                mutableStateListOf<ShoppingItem>()
+            }
+
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Header()
-                DisplayShoppingList(shoppingItems)
-                AddItem()
+                DisplayShoppingList(
+                    shoppingList = shoppingListItems,
+                    onAddItem = { itemName ->
+                        shoppingListItems.add(ShoppingItem(itemName))
+                    }
+                )
             }
         }
     }
@@ -56,19 +51,21 @@ fun Header() {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-             .fillMaxWidth()
-             .height(120.dp)
-             .background(Color.hsv(124f, 0.4f, 0.75f))
-        ) {
+            .fillMaxWidth()
+            .height(120.dp)
+            .background(Color.hsv(124f, 0.4f, 0.75f))
+    ) {
         Image(
             painter = painterResource(R.drawable.logo),
             contentDescription = "Logo",
-            modifier = Modifier
-                .padding(top = 30.dp)
-        ) }
+            modifier = Modifier.padding(top = 30.dp)
+        )
+    }
 }
 
-//displays single entry in the shopping list
+val mainGreen = Color.hsv(124f, 0.4f, 0.75f)
+val secondaryOrange = Color.hsv(9f, 0.68f, 0.94f)
+
 @Composable
 fun ShoppingListEntry(shoppingItem: ShoppingItem) {
     Row(
@@ -76,95 +73,143 @@ fun ShoppingListEntry(shoppingItem: ShoppingItem) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 15.dp)
+            .padding(bottom = 5.dp)
     ) {
-        // Item Name
-        Text(shoppingItem.itemName,
-            fontSize = 20.sp,
+        Text(
+            shoppingItem.itemName.uppercase(),
+            fontSize = 18.sp,
+            fontFamily = FontFamily.Serif,
+            letterSpacing = 0.7.sp,
             color = Color.DarkGray,
-            modifier = Modifier
-                .padding(start = 20.dp)
+            modifier = Modifier.padding(start = 20.dp)
         )
 
-        Row (verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(end = 25.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(end = 25.dp)
+        ) {
+            ItemCounter(shoppingItem = shoppingItem)
 
-            // Arrow to decrease amount
-            Icon(
-                imageVector = Icons.AutoMirrored.Sharp.ArrowBackIos,
-                contentDescription = "Left Pointing Arrow",
-                tint = Color.hsv(124f, 0.4f, 0.75f),
-            )
-
-            // The current amount of the item
-            Text(shoppingItem.itemAmount.toString(),
-                fontSize = 20.sp,
-                color = Color.DarkGray,
-                modifier = Modifier
-                    .padding(start = 10.dp, end = 10.dp)
-            )
-
-            // Arrow to increase amount
-            Icon(
-                imageVector = Icons.AutoMirrored.Sharp.ArrowForwardIos,
-                contentDescription = "Right Pointing Arrow",
-                tint = Color.hsv(124f, 0.4f, 0.75f),
-            )
-
-            // Delete Button to delete the item from the list
             Icon(
                 imageVector = Icons.Sharp.DeleteOutline,
-                contentDescription = "Filled Shopping Cart",
-                tint = Color.Red,
-                modifier = Modifier
-                .padding(start = 20.dp)
+                contentDescription = "Delete Item",
+                tint = secondaryOrange,
+                modifier = Modifier.padding(start = 20.dp)
             )
         }
     }
 }
 
-//takes a list of items and builds a shopping list
 @Composable
-fun DisplayShoppingList(shoppingList: List<ShoppingItem>) {
-    if(!shoppingList.isEmpty()) {
-        Column (
-            modifier = Modifier
-                .padding(top = 20.dp)
-        ){
+fun ItemCounter(
+    shoppingItem: ShoppingItem,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+    ) {
+        IconButton(onClick = {
+            shoppingItem.decreaseAmount(1)
+        }) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Sharp.ArrowBackIos,
+                contentDescription = "Decrease",
+                tint = mainGreen
+            )
+        }
+
+        Text(text = shoppingItem.itemAmount.toString())
+
+        IconButton(onClick = {
+            shoppingItem.increaseAmount(1)
+        }) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Sharp.ArrowForwardIos,
+                contentDescription = "Increase",
+                tint = mainGreen
+            )
+        }
+    }
+}
+
+@Composable
+fun DisplayShoppingList(
+    shoppingList: MutableList<ShoppingItem>,
+    onAddItem: (String) -> Unit
+) {
+    var isAdding by remember { mutableStateOf(false) }
+    var newItemName by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier.padding(top = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (shoppingList.isNotEmpty()) {
             for (item in shoppingList) {
                 ShoppingListEntry(item)
+            }
+        }
+
+        if (isAdding) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            ) {
+                TextField(
+                    value = newItemName,
+                    onValueChange = { newItemName = it },
+                    placeholder = { Text("Produktname") },
+                    modifier = Modifier.weight(1f)
+                )
+                Button(
+                    onClick = {
+                        val trimmed = newItemName.trim()
+                        if (trimmed.isNotEmpty()) {
+                            onAddItem(trimmed)
+                            newItemName = ""
+                            isAdding = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = mainGreen)
+                ) {
+                    Text("+", fontSize = 25.sp)
+                }
+            }
+        } else {
+            Button(
+                onClick = { isAdding = true },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = mainGreen,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier.padding(top = 10.dp)
+            ) {
+                Text("+", fontSize = 25.sp)
             }
         }
     }
 }
 
-@Composable
-fun AddItem() {
-    Button(onClick = {
-        shoppingItems.add(ShoppingItem("Apfel"))
-    },
-    colors = ButtonDefaults.buttonColors(
-        containerColor = Color.hsv(124f, 0.4f, 0.75f),
-        contentColor = Color.White
-    )) {
-        Text("+")
-    }
-}
-
-//TODO: implement
-fun DeleteItem() {
-
-}
-
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    shoppingItems.add(ShoppingItem("Apfel"))
-    shoppingItems.add(ShoppingItem("Kartoffeln"))
-    shoppingItems.add(ShoppingItem("Chips"))
+    val shoppingListItems = remember {
+        mutableStateListOf<ShoppingItem>()
+    }
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Header()
-        DisplayShoppingList(shoppingItems)
-        AddItem()
+        DisplayShoppingList(
+            shoppingList = shoppingListItems,
+            onAddItem = { itemName ->
+                shoppingListItems.add(ShoppingItem(itemName))
+            }
+        )
     }
 }

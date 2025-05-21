@@ -1,25 +1,27 @@
 package com.example.shopping_list
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
-data class ShoppingItem(var itemName: String){
+data class ShoppingItem(var itemName: String) {
 
-    var itemAmount: Int = 1
+    // Make itemAmount observable by Compose
+    var itemAmount by mutableIntStateOf(1)
         private set
 
     fun setAmount(amount: Int) {
-        if (itemAmount > 0)
+        if (amount > 0)
             itemAmount = amount
     }
 
-    fun decreaseAmount(amount: Int){
+    fun decreaseAmount(amount: Int) {
         if (itemAmount - amount >= 1)
             itemAmount -= amount
     }
 
-    fun increaseAmount(amount: Int){
+    fun increaseAmount(amount: Int) {
         itemAmount += amount
     }
-
 }
