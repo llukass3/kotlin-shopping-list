@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
+
 data class ShoppingItem(var itemName: String) {
 
     // Make itemAmount observable by Compose
@@ -25,3 +26,5 @@ data class ShoppingItem(var itemName: String) {
         itemAmount += amount
     }
 }
+
+
